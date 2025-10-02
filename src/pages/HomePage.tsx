@@ -13,6 +13,7 @@ interface HomePageProps {
 export default function HomePage({ onBookingClick, onProductsClick, onAddToCart }: HomePageProps) {
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     loadFeaturedProducts();
@@ -20,6 +21,44 @@ export default function HomePage({ onBookingClick, onProductsClick, onAddToCart 
 
   const loadFeaturedProducts = async () => {
     try {
+      // Vérifier si Supabase est configuré
+      if (!import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_ANON_KEY) {
+        console.warn('Supabase non configuré, utilisation de données de démonstration');
+        // Données de démonstration pour éviter la page blanche
+        setFeaturedProducts([
+          {
+            id: 'demo-1',
+            name: 'Premium Blackout Curtains',
+            description: 'Luxury blackout curtains with thermal insulation, perfect for bedrooms.',
+            category: 'manual',
+            base_price: 450.00,
+            price_per_sqm: 75.00,
+            image_url: 'https://images.pexels.com/photos/1457847/pexels-photo-1457847.jpeg?auto=compress&cs=tinysrgb&w=800',
+            is_featured: true,
+            is_bestseller: true,
+            stock_status: 'in_stock',
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          },
+          {
+            id: 'demo-2',
+            name: 'Motorized Roller Blinds',
+            description: 'Smart motorized blinds with remote control and app integration.',
+            category: 'motorized',
+            base_price: 850.00,
+            price_per_sqm: 142.00,
+            image_url: 'https://images.pexels.com/photos/6315812/pexels-photo-6315812.jpeg?auto=compress&cs=tinysrgb&w=800',
+            is_featured: true,
+            is_bestseller: true,
+            stock_status: 'in_stock',
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          }
+        ]);
+        setLoading(false);
+        return;
+      }
+
       const { data, error } = await supabase
         .from('products')
         .select('*')
@@ -30,6 +69,7 @@ export default function HomePage({ onBookingClick, onProductsClick, onAddToCart 
       setFeaturedProducts(data || []);
     } catch (error) {
       console.error('Error loading products:', error);
+      setError('Erreur lors du chargement des produits');
     } finally {
       setLoading(false);
     }
